@@ -56,6 +56,7 @@ namespace UnityEngine.UI
             float hp_h = 0.4f;
             float hp_bg_w = 2f;
             float hp_w = 1.9f;
+            int i;
             Rect rect = new Rect(pos.x, pos.z,hp_bg_w,hp_bg_h);
             Vector3[] vertices =  new Vector3[] {
                 new Vector3(rect.xMin,pos.y,rect.yMin),
@@ -72,7 +73,7 @@ namespace UnityEngine.UI
                 new Vector2(rect.xMax,rect.yMin),
                 new Vector2(rect.xMax,rect.yMax),
             };
-            int index = buffer.AddQuad(vertices,new Color(0,0,0,0.5f), uvs, uuid == 2);
+            int index = buffer.AddQuad(vertices,new Color(0,0,0,0.5f), uvs,out i, uuid == 2);
 
             rect.Set(pos.x+ (hp_bg_w - hp_w)/2, pos.z + (hp_bg_h - hp_h)/2, hp_w, hp_h);
             vertices = new Vector3[] {
@@ -89,7 +90,7 @@ namespace UnityEngine.UI
                 new Vector2(rect.xMax,rect.yMin),
                 new Vector2(rect.xMax,rect.yMax),
             };
-            buffer.AddQuad(vertices, Color.white, uvs, uuid == 2);
+            buffer.AddQuad(vertices, Color.white, uvs, out i, uuid == 2);
 
             float mp_bg_h = 0.2f;
             float mp_h = 0.15f;
@@ -111,7 +112,8 @@ namespace UnityEngine.UI
                 new Vector2(rect.xMax,rect.yMin),
                 new Vector2(rect.xMax,rect.yMax),
             };
-            buffer.AddQuad(vertices, new Color(0, 0, 0, 0.5f), uvs, uuid == 2);
+            
+            buffer.AddQuad(vertices, new Color(0, 0, 0, 0.5f), uvs, out i, uuid == 2);
 
             rect.Set(pos.x + (mp_bg_w - mp_w) / 2, pos.z + hp_bg_h + 0.05f + (mp_bg_h - mp_h) / 2, mp_w, mp_h);
             vertices = new Vector3[] {
@@ -128,7 +130,7 @@ namespace UnityEngine.UI
                 new Vector2(rect.xMax,rect.yMin),
                 new Vector2(rect.xMax,rect.yMax),
             };
-            buffer.AddQuad(vertices, new Color(113.0f/255, 226.0f/255, 217.0f/255,1), uvs, uuid == 2);
+            buffer.AddQuad(vertices, new Color(113.0f/255, 226.0f/255, 217.0f/255,1), uvs, out i, uuid == 2);
 
 
 

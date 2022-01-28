@@ -3,3 +3,6 @@
 /obj
 /Temp
 /Packages
+/.vsconfig
+/*.csproj
+/*.sln
