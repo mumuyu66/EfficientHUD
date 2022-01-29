@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class QuadMeshDetail
+public class QuadMesh
 {
     public int buffIndex;
     public int indicesIndex;
 }
 
-public class ActorUIMeshDetail
+public class ActorUIMesh
 {
-    private UIMeshDataBuffer buffer;
-    private List<QuadMeshDetail> quads = new List<QuadMeshDetail>();
+    private UIMeshBuffer buffer;
+    private List<QuadMesh> quads = new List<QuadMesh>();
 
-    public ActorUIMeshDetail(int quadNum, UIMeshDataBuffer buffer)
+    public ActorUIMesh(int quadNum, UIMeshBuffer buffer)
     {
         for (int i = 0; i < quadNum; i++)
         {
@@ -31,90 +31,102 @@ public class ActorUIMeshDetail
             };
             int bi, ii;
             bi = buffer.AddQuad(vertices, new Color(0, 0, 0, 0.5f), uvs,out ii, true);
-            quads.Add(new QuadMeshDetail() { buffIndex = bi, indicesIndex = ii });
+            quads.Add(new QuadMesh() { buffIndex = bi, indicesIndex = ii });
         }
     }
 
     public void CollapseQuadPostion(int index)
     {
         if (index >= quads.Count || index < 0) return;
-        QuadMeshDetail quad = quads[index];
+        QuadMesh quad = quads[index];
         buffer.CollapseQuad(quad.indicesIndex);
+    }
+
+    public void FillQuad(int index)
+    {
+        if (index >= quads.Count || index < 0) return;
+
+        buffer.CollapseQuad(quads[index].indicesIndex);
     }
 
     public void UpdataColor(int index, Color color)
     {
         if (index >= quads.Count || index < 0) return;
-        QuadMeshDetail quad = quads[index];
+        QuadMesh quad = quads[index];
         buffer.UpdataColor(quad.buffIndex,color);
     }
 
     public void UpdataVertices(int index, Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3)
     {
         if (index >= quads.Count || index < 0) return;
-        QuadMeshDetail quad = quads[index];
+        QuadMesh quad = quads[index];
         buffer.UpdataVertices(quad.buffIndex, v0,v1,v2,v3);
     }
 
     public void UpdataUV(int index, Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3)
     {
         if (index >= quads.Count || index < 0) return;
-        QuadMeshDetail quad = quads[index];
+        QuadMesh quad = quads[index];
         buffer.UpdataUV(quad.buffIndex, v0, v1, v2, v3);
     }
 }
 
 public class ActorUIMeshProvider
 {
-    private readonly Stack<ActorUIMeshDetail> m_Stack = new Stack<ActorUIMeshDetail>();
-    
+    private readonly Stack<ActorUIMesh> stack = new Stack<ActorUIMesh>();
+    private static readonly Lazy<ActorUIMeshProvider> lazy = new Lazy<ActorUIMeshProvider>(() => new ActorUIMeshProvider());
+    public static ActorUIMeshProvider Instance { get { return lazy.Value; }}
 
-    public int countAll { get; private set; }
-    public int countActive { get { return countAll - countInactive; } }
-    public int countInactive { get { return m_Stack.Count; } }
-    private UIMeshDataBuffer buffer;
+    public int CountAll { get; private set; }
+    public int CountActive { get { return CountAll - CountInactive; } }
+    public int CountInactive { get { return stack.Count; } }
+    private UIMeshBuffer buffer;
     private int actorHUDQuadNum = 4;
-    public ActorUIMeshProvider(int quadNum)
+    public ActorUIMeshProvider()
     {
-        actorHUDQuadNum = quadNum;
-        buffer = new UIMeshDataBuffer();
+        buffer = new UIMeshBuffer();
     }
 
-    public void InitBuff(int size)
+    private bool inited = false;
+    public void InitBuff(int actorNum,int actorQuadNum)
     {
-        for (int i = 0; i < size; i++)
+        if (!inited)
         {
-            ActorUIMeshDetail element = new ActorUIMeshDetail(actorHUDQuadNum, buffer);
-            m_Stack.Push(element);
-            countAll++;
+            this.actorHUDQuadNum = actorQuadNum;
+            for (int i = 0; i < actorNum; i++)
+            {
+                ActorUIMesh element = new ActorUIMesh(actorHUDQuadNum, buffer);
+                stack.Push(element);
+                CountAll++;
+            }
+            inited = true;
         }
     }
 
-    public ActorUIMeshDetail Get()
+    public ActorUIMesh Get()
     {
-        ActorUIMeshDetail element;
-        if (m_Stack.Count == 0)
+        ActorUIMesh element;
+        if (stack.Count == 0)
         {
-            element = new ActorUIMeshDetail(actorHUDQuadNum, buffer);
-            countAll++;
+            element = new ActorUIMesh(actorHUDQuadNum, buffer);
+            CountAll++;
         }
         else
         {
-            element = m_Stack.Pop();
+            element = stack.Pop();
         }
-       
         return element;
     }
 
-    public void Release(ActorUIMeshDetail element)
+    public void Release(ActorUIMesh element)
     {
-        if (m_Stack.Count > 0 && ReferenceEquals(m_Stack.Peek(), element))
+        if (stack.Count > 0 && ReferenceEquals(stack.Peek(), element))
             Debug.LogError("Internal error. Trying to destroy object that is already released to pool.");
-        m_Stack.Push(element);
+        stack.Push(element);
     }
 }
 
-public class UIMeshDataBuffer
+public class UIMeshBuffer
 {
     private List<Vector3> mVertices = ListPool<Vector3>.Get();
     private List<Color32> mColors = ListPool<Color32>.Get();
@@ -168,6 +180,17 @@ public class UIMeshDataBuffer
         {
             mIndices[i] = indicesIndex;
         }
+    }
+
+    public void FillQuad(int indicesIndex)
+    {
+        mIndices[indicesIndex] = indicesIndex;
+        mIndices[indicesIndex + 1] = indicesIndex + 1;
+        mIndices[indicesIndex + 2] = indicesIndex + 2;
+
+        mIndices[indicesIndex + 3] = indicesIndex + 1;
+        mIndices[indicesIndex + 4] = indicesIndex + 3;
+        mIndices[indicesIndex + 5] = indicesIndex + 2;
     }
 
     public void UpdataColor(int index,Color color)

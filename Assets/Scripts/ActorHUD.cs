@@ -6,23 +6,19 @@ using UnityEngine;
 
 public class ActorHUD : MonoBehaviour
 {
-    public ActorHUD(int uuid, UIMeshDataBuffer meshSharedBuffer, Material mat)
+    public ActorHUD(int uuid, UIMeshBuffer meshSharedBuffer, Material mat)
     {
 
-    }
-
-    protected UIMeshDataBuffer mMeshSharedBuffer;
-    protected int uuid;
-    public void SetActorData(int uuid,UIMeshDataBuffer meshData)
-    {
-        this.uuid = uuid;
-        mMeshSharedBuffer = meshData;
     }
 
     public void Start()
     {
+        ActorUIMesh mesh = ActorUIMeshProvider.Instance.Get();
         HUDImage[] images =  this.transform.GetComponents<HUDImage>();
-
+        for (int i = 0; i < images.Length; i++)
+        {
+            images[i].SetActorHUDMesh(i,mesh);
+        }
     }
 
     public void OnEnable()

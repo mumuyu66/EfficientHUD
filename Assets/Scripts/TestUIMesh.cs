@@ -19,7 +19,7 @@ namespace UnityEngine.UI
 
         public Material uiMat;
         public AssetPacker assetPacker;
-        private UIMeshDataBuffer buffer;
+        private UIMeshBuffer buffer;
 
 
         void Start()
@@ -40,7 +40,7 @@ namespace UnityEngine.UI
         {
             Material material = new Material(Shader.Find("UI/Default"));
             mesh = new Mesh();
-            buffer = new UIMeshDataBuffer();
+            buffer = new UIMeshBuffer();
             material.SetTexture("_MainTex", assetPacker.texture);
 
             for (int i = 0; i < 5; i++)
