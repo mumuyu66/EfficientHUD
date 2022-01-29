@@ -5,4 +5,5 @@
 /Packages
 /.vsconfig
 /*.csproj
+/*.vs
 /*.sln
