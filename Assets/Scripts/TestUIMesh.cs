@@ -77,10 +77,10 @@ namespace UnityEngine.UI
 
             rect.Set(pos.x+ (hp_bg_w - hp_w)/2, pos.z + (hp_bg_h - hp_h)/2, hp_w, hp_h);
             vertices = new Vector3[] {
-                new Vector3(rect.xMin,pos.y,rect.yMin),
-                new Vector3(rect.xMin,pos.y,rect.yMax),
-                new Vector3(rect.xMax,pos.y,rect.yMin),
-                new Vector3(rect.xMax,pos.y,rect.yMax),
+                new Vector3(rect.xMin,rect.yMin),
+                new Vector3(rect.xMin,rect.yMax),
+                new Vector3(rect.xMax,rect.yMin),
+                new Vector3(rect.xMax,rect.yMax),
             };
             uv4 = UnityEngine.Sprites.DataUtility.GetOuterUV(assetPacker.GetSprite("Hp_R"));
             rect.Set(uv4.x, uv4.y, uv4.z - uv4.x, uv4.w - uv4.y);

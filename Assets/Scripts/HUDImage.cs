@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.U2D;
 using UnityEngine.UI;
 
-public class HUDImage:Image
+public class HUDImage: MaskableGraphic
 {
+    
 
     private int meshId;
     private ActorUIMesh hudMesh;
@@ -17,6 +19,7 @@ public class HUDImage:Image
         this.hudMesh = mesh;
     }
 
+
     protected override void OnPopulateMesh(VertexHelper toFill)
     {
 #if UNITY_EDITOR 
@@ -25,30 +28,10 @@ public class HUDImage:Image
         {
             base.OnPopulateMesh(toFill);
         }
-#endif
-        if (sprite == null)
-        {
-            return;
-        }
-        switch (type)
-        {
-            case Type.Simple:
-                GenerateSimpleSprite(m_PreserveAspect);
-                break;
-            case Type.Sliced:
-                GenerateSlicedSprite();
-                break;
-            case Type.Tiled:
-                break;
-            case Type.Filled:
-                break;
-        }
+#endif                       
     }
-    [NonSerialized]
-    private Sprite m_OverrideSprite;
-    [SerializeField] private bool m_PreserveAspect = false;
 
-    private Sprite activeSprite { get { return m_OverrideSprite != null ? m_OverrideSprite : sprite; } }
+    [SerializeField] public Sprite activeSprite;
 
     private void PreserveSpriteAspectRatio(ref Rect rect, Vector2 spriteSize)
     {
@@ -86,7 +69,6 @@ public class HUDImage:Image
             padding.y / spriteH,
             (spriteW - padding.z) / spriteW,
             (spriteH - padding.w) / spriteH);
-
         if (shouldPreserveAspect && size.sqrMagnitude > 0.0f)
         {
             PreserveSpriteAspectRatio(ref r, size);
@@ -98,19 +80,26 @@ public class HUDImage:Image
             r.x + r.width * v.z,
             r.y + r.height * v.w
         );
-
         return v;
     }
 
-    protected virtual void GenerateSimpleSprite(bool lPreserveAspect) 
-    {
-        Vector4 v = GetDrawingDimensions(lPreserveAspect);
-        var uv = (activeSprite != null) ? UnityEngine.Sprites.DataUtility.GetOuterUV(activeSprite) : Vector4.zero;
 
-        hudMesh.UpdataColor(meshId, color);
-        hudMesh.UpdataUV(meshId,new Vector2(uv.x, uv.y), new Vector2(uv.x, uv.w), new Vector2(uv.z, uv.w), new Vector2(uv.z, uv.y));
-        hudMesh.UpdataVertices(meshId,new Vector3(v.x, v.y), new Vector3(v.x, v.w),new Vector3(v.z, v.w), new Vector3(v.z, v.y));
-        hudMesh.FillQuad(meshId);
+    public virtual void OnFillMesh(ActorUIMesh mesh)
+    {
+        //Vector4 v = GetDrawingDimensions(false);
+        Rect r = rectTransform.rect;
+        Vector4 v = new Vector4(r.xMin,r.yMin,r.xMax,r.yMax);
+        var uv = (activeSprite != null) ? UnityEngine.Sprites.DataUtility.GetOuterUV(activeSprite) : Vector4.zero;
+        mesh.UpdataColor(meshId, color);
+        mesh.UpdataUV(meshId, new Vector2(uv.x, uv.y), new Vector2(uv.x, uv.w), new Vector2(uv.z, uv.w), new Vector2(uv.z, uv.y));
+        mesh.UpdataVertices(meshId, new Vector3(v.x, v.y), new Vector3(v.x, v.w), new Vector3(v.z, v.w), new Vector3(v.z, v.y));
+        mesh.FillQuad(meshId);
+    }
+
+    public virtual void OnRenderer(Renderer r)
+    {
+        material.SetTexture("_MainTex", activeSprite.texture);
+        r.material = material;
     }
 
     protected virtual void GenerateSlicedSprite()

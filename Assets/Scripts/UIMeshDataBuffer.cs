@@ -33,6 +33,7 @@ public class ActorUIMesh
             bi = buffer.AddQuad(vertices, new Color(0, 0, 0, 0.5f), uvs,out ii, true);
             quads.Add(new QuadMesh() { buffIndex = bi, indicesIndex = ii });
         }
+        this.buffer = buffer;
     }
 
     public void CollapseQuadPostion(int index)
@@ -46,7 +47,7 @@ public class ActorUIMesh
     {
         if (index >= quads.Count || index < 0) return;
 
-        buffer.CollapseQuad(quads[index].indicesIndex);
+        buffer.FillQuad(quads[index].indicesIndex, quads[index].buffIndex);
     }
 
     public void UpdataColor(int index, Color color)
@@ -68,6 +69,11 @@ public class ActorUIMesh
         if (index >= quads.Count || index < 0) return;
         QuadMesh quad = quads[index];
         buffer.UpdataUV(quad.buffIndex, v0, v1, v2, v3);
+    }
+
+    public void FillMesh(Mesh mesh)
+    {
+        buffer.FillMesh(mesh);
     }
 }
 
@@ -182,15 +188,15 @@ public class UIMeshBuffer
         }
     }
 
-    public void FillQuad(int indicesIndex)
+    public void FillQuad(int indicesIndex,int vindex)
     {
-        mIndices[indicesIndex] = indicesIndex;
-        mIndices[indicesIndex + 1] = indicesIndex + 1;
-        mIndices[indicesIndex + 2] = indicesIndex + 2;
+        mIndices[indicesIndex] = vindex;
+        mIndices[indicesIndex + 1] = vindex + 1;
+        mIndices[indicesIndex + 2] = vindex + 2;
 
-        mIndices[indicesIndex + 3] = indicesIndex + 1;
-        mIndices[indicesIndex + 4] = indicesIndex + 3;
-        mIndices[indicesIndex + 5] = indicesIndex + 2;
+        mIndices[indicesIndex + 3] = vindex + 2;
+        mIndices[indicesIndex + 4] = vindex + 3;
+        mIndices[indicesIndex + 5] = vindex + 0;
     }
 
     public void UpdataColor(int index,Color color)

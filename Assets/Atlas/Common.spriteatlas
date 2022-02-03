@@ -1,0 +1,98 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Common
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings:
+    - serializedVersion: 3
+      m_BuildTarget: Android
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: 51
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 1
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    - serializedVersion: 3
+      m_BuildTarget: iPhone
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: 47
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 1
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    - serializedVersion: 3
+      m_BuildTarget: DefaultTexturePlatform
+      m_MaxTextureSize: 1024
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: -1
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 0
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    packingSettings:
+      serializedVersion: 2
+      padding: 8
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: 2518e905b67f5554799c158a604f0b89, type: 3}
+    totalSpriteSurfaceArea: 17726
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: ccaa9482a9d15c9479a6c51005f2fa8a, type: 3}
+  - {fileID: 21300000, guid: a303786384ab6d142b7d4138874fc835, type: 3}
+  - {fileID: 21300000, guid: 6a872404ba194f745a1a613acec994f0, type: 3}
+  - {fileID: 21300000, guid: 37c06f35cff406c47aa934989614a381, type: 3}
+  - {fileID: 21300000, guid: 8ad56709d23971d449df10ee906def7a, type: 3}
+  - {fileID: 21300000, guid: 5dc1b1ac01fa2fd45b7fd6d6efcf414b, type: 3}
+  - {fileID: 21300000, guid: 98bf78acb75b1854ebae0cdad60b1578, type: 3}
+  - {fileID: 21300000, guid: e4b715ad566a6aa4fb7289855bfef8d9, type: 3}
+  - {fileID: 21300000, guid: fd30f0bf1a4875e4f8b365a5803f3f3b, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Mp_W
+  - common_bg
+  - Hp_bar_shield
+  - Hp_R
+  - Hp_W
+  - Hp_G
+  - Hp_loss_G
+  - Hp_loss_R
+  - Hp_bar_separation
+  m_RenderDataMap: {}
+  m_Tag: Common
+  m_IsVariant: 0
