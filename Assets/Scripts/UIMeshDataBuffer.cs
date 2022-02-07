@@ -8,12 +8,12 @@ public class QuadMesh
     public int indicesIndex;
 }
 
-public class ActorUIMesh
+public class SharedQuadMesh
 {
     private UIMeshBuffer buffer;
     private List<QuadMesh> quads = new List<QuadMesh>();
 
-    public ActorUIMesh(int quadNum, UIMeshBuffer buffer)
+    public SharedQuadMesh(int quadNum, UIMeshBuffer buffer)
     {
         for (int i = 0; i < quadNum; i++)
         {
@@ -61,6 +61,7 @@ public class ActorUIMesh
     {
         if (index >= quads.Count || index < 0) return;
         QuadMesh quad = quads[index];
+        Debug.Log(string.Format("UpdataVertices index = {0} v0 = {1} v1 = {2} v2 = {3} v3 = {4}",index,v0,v1,v2,v3));
         buffer.UpdataVertices(quad.buffIndex, v0,v1,v2,v3);
     }
 
@@ -79,7 +80,7 @@ public class ActorUIMesh
 
 public class ActorUIMeshProvider
 {
-    private readonly Stack<ActorUIMesh> stack = new Stack<ActorUIMesh>();
+    private readonly Stack<SharedQuadMesh> stack = new Stack<SharedQuadMesh>();
     private static readonly Lazy<ActorUIMeshProvider> lazy = new Lazy<ActorUIMeshProvider>(() => new ActorUIMeshProvider());
     public static ActorUIMeshProvider Instance { get { return lazy.Value; }}
 
@@ -101,7 +102,7 @@ public class ActorUIMeshProvider
             this.actorHUDQuadNum = actorQuadNum;
             for (int i = 0; i < actorNum; i++)
             {
-                ActorUIMesh element = new ActorUIMesh(actorHUDQuadNum, buffer);
+                SharedQuadMesh element = new SharedQuadMesh(actorHUDQuadNum, buffer);
                 stack.Push(element);
                 CountAll++;
             }
@@ -109,12 +110,12 @@ public class ActorUIMeshProvider
         }
     }
 
-    public ActorUIMesh Get()
+    public SharedQuadMesh Get()
     {
-        ActorUIMesh element;
+        SharedQuadMesh element;
         if (stack.Count == 0)
         {
-            element = new ActorUIMesh(actorHUDQuadNum, buffer);
+            element = new SharedQuadMesh(actorHUDQuadNum, buffer);
             CountAll++;
         }
         else
@@ -124,7 +125,7 @@ public class ActorUIMeshProvider
         return element;
     }
 
-    public void Release(ActorUIMesh element)
+    public void Release(SharedQuadMesh element)
     {
         if (stack.Count > 0 && ReferenceEquals(stack.Peek(), element))
             Debug.LogError("Internal error. Trying to destroy object that is already released to pool.");
@@ -142,6 +143,36 @@ public class UIMeshBuffer
     private List<Vector2> mUv3s = ListPool<Vector2>.Get();
     private List<Vector3> mNormals = ListPool<Vector3>.Get();
     private List<int> mIndices = ListPool<int>.Get();
+
+    public int AddQuad(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, Vector2 uv0, Vector2 uv1, Vector2 uv2, Vector2 uv3, Color32 color, out int indicesIndex)
+    {
+        int startIndex = mVertices.Count;
+        indicesIndex = mIndices.Count;
+        mVertices.Add(v0);
+        mVertices.Add(v1);
+        mVertices.Add(v2);
+        mVertices.Add(v3);
+
+        mUv0s.Add(uv0);
+        mUv0s.Add(uv1);
+        mUv0s.Add(uv2);
+        mUv0s.Add(uv3);
+
+        mColors.Add(color);
+        mColors.Add(color);
+        mColors.Add(color);
+        mColors.Add(color);
+
+        mIndices.Add(startIndex);
+        mIndices.Add(startIndex + 1);
+        mIndices.Add(startIndex + 2);
+
+        mIndices.Add(startIndex + 1);
+        mIndices.Add(startIndex + 3);
+        mIndices.Add(startIndex + 2);
+
+        return startIndex;
+    }
 
     public int AddQuad(Vector3[] vertices, Color32 color, Vector2[] uvs, out int indicesIndex, bool collapse = false)
     {

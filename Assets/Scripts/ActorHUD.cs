@@ -10,7 +10,7 @@ public class ActorHUD : MonoBehaviour
 
     public void Start()
     {
-        ActorUIMesh mesh = ActorUIMeshProvider.Instance.Get();
+        SharedQuadMesh mesh = ActorUIMeshProvider.Instance.Get();
         Mesh _mesh = new Mesh();
         MeshFilter filter = this.gameObject.AddComponent<MeshFilter>();
         filter.mesh = _mesh;

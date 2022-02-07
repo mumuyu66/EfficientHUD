@@ -12,8 +12,8 @@ public class HUDImage: MaskableGraphic
     
 
     private int meshId;
-    private ActorUIMesh hudMesh;
-    public void SetActorHUDMesh(int id, ActorUIMesh mesh)
+    private SharedQuadMesh hudMesh;
+    public void SetActorHUDMesh(int id, SharedQuadMesh mesh)
     {
         this.meshId = id;
         this.hudMesh = mesh;
@@ -84,7 +84,7 @@ public class HUDImage: MaskableGraphic
     }
 
 
-    public virtual void OnFillMesh(ActorUIMesh mesh)
+    public virtual void OnFillMesh(SharedQuadMesh mesh)
     {
         //Vector4 v = GetDrawingDimensions(false);
         Rect r = rectTransform.rect;
