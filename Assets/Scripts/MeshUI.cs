@@ -42,38 +42,116 @@ namespace UnityEngine.UI
     [ExecuteInEditMode]
     public class MeshUI : UnityEngine.EventSystems.UIBehaviour, ICanvasElement
     {
-        public virtual void Rebuild(CanvasUpdate update)
-        {
-            if (canvasRenderer.cull)
-                return;
 
-            switch (update)
+        protected override void Start()
+        {
+            base.Start();
+            UIGroup.AddMeshUI(this);
+        }
+
+        protected override void OnRectTransformDimensionsChange()
+        {
+            if (gameObject.activeInHierarchy)
             {
-                case CanvasUpdate.PreRender:
-                    if (m_VertsDirty)
-                    {
-                        UpdateGeometry();
-                        m_VertsDirty = false;
-                    }
-                    break;
+                SetVerticesDirty();
             }
+        }
+
+        protected override void OnBeforeTransformParentChanged()
+        {
+            LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
+        }
+
+        protected override void OnTransformParentChanged()
+        {
+            base.OnTransformParentChanged();
+
+            if (!IsActive())
+                return;
+        }
+
+        public virtual void SetAllDirty()
+        {
+            SetVerticesDirty();
+        }
+
+        public MeshUIGroup UIGroup
+        {
+            get 
+            {
+                if (m_Group == null)
+                {
+                    CacheGroup();
+                }
+                return m_Group;
+            }
+        }
+
+
+        private MeshUIGroup m_Group;
+        private void CacheGroup()
+        {
+            var list = ListPool<MeshUIGroup>.Get();
+            gameObject.GetComponentsInParent(false, list);
+            if (list.Count > 0)
+            {
+                // Find the first active and enabled MeshUIGroup.
+                for (int i = 0; i < list.Count; ++i)
+                {
+                    if (list[i].isActiveAndEnabled)
+                    {
+                        m_Group = list[i];
+                        break;
+                    }
+                }
+            }
+            else
+                m_Group = null;
+            ListPool<MeshUIGroup>.Release(list);
+        }
+
+
+#if UNITY_EDITOR
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+            SetAllDirty();
+        }
+
+#endif
+
+        /// <summary>
+        /// Mark the Graphic and the canvas as having been changed.
+        /// </summary>
+        protected override void OnEnable()
+        {
+            m_VertsDirty = true;
+        }
+
+        /// <summary>
+        /// Clear references.
+        /// </summary>
+        protected override void OnDisable()
+        {
+            m_VertsDirty = true;
+#if UNITY_EDITOR
+#endif
         }
 
         public virtual void GraphicUpdateComplete()
         {
+            Debug.Log(string.Format("GraphicUpdateComplete"));
         }
 
         public virtual void LayoutComplete()
         {
+            Debug.Log(string.Format("LayoutComplete"));
         }
 
 
         [NonSerialized] private RectTransform m_RectTransform;
-        [NonSerialized] private CanvasRenderer m_CanvasRender;
-        [NonSerialized] private Canvas m_Canvas;
 
         [NonSerialized] private bool m_VertsDirty;
-        [NonSerialized] private bool m_MaterialDirty;
 
 
         [SerializeField] private Color m_Color = Color.white;
@@ -87,49 +165,23 @@ namespace UnityEngine.UI
             get { return m_RectTransform ?? (m_RectTransform = GetComponent<RectTransform>()); }
         }
 
+        Transform ICanvasElement.transform => throw new NotImplementedException();
+
         public virtual void SetVerticesDirty()
         {
             if (!IsActive())
                 return;
 
             m_VertsDirty = true;
-            CanvasUpdateRegistry.RegisterCanvasElementForGraphicRebuild(this);
         }
 
-        /// <summary>
-        /// UI Renderer component.
-        /// </summary>
-        public CanvasRenderer canvasRenderer
-        {
-            get
-            {
-                return m_CanvasRender;
-            }
-            set
-            {
-                m_CanvasRender = value;
-            }
-        }
-
-        public Canvas canvas
-        {
-            get
-            {
-                return m_Canvas;
-            }
-            set
-            {
-                m_Canvas = value;
-            }
-        }
-
-        private UIMeshBuffer meshBuffer;
-        private int indicesIndex, vindex;
-        public void SetUIMeshBuffer(UIMeshBuffer meshBuffer,int indicesIndex,int vindex)
+        protected QuadMesh qmesh;
+        protected UIMeshBuffer meshBuffer;
+        public void SetUIMeshBuffer(UIMeshBuffer meshBuffer, QuadMesh qmesh)
         {
             this.meshBuffer = meshBuffer;
-            this.indicesIndex = indicesIndex;
-            this.vindex = vindex;
+            this.qmesh = qmesh;
+            SetAllDirty();
         }
        
         /// <summary>
@@ -140,55 +192,53 @@ namespace UnityEngine.UI
             DoLegacyMeshGeneration();
         }
 
-        /// <summary>
-        /// Update the renderer's material.
-        /// </summary>
-        protected virtual void UpdateMaterial()
-        {
-            if (!IsActive())
-                return;
-
-            canvasRenderer.materialCount = 1;
-            // canvasRenderer.SetMaterial(materialForRendering, 0);
-            // canvasRenderer.SetTexture(mainTexture);
-        }
 
         private void DoLegacyMeshGeneration()
         {
-          //  OnPopulateMesh();
+            OnPopulateMesh();
         }
 
         /// <summary>
         /// Fill the vertex buffer data.
         /// </summary>
-        protected virtual void OnPopulateMesh(UIMeshBuffer mesh)
+        protected virtual void OnPopulateMesh()
         {
             var r = GetPixelAdjustedRect();
             var v = new Vector4(r.x, r.y, r.x + r.width, r.y + r.height);
+            /*
             mesh.UpdataColor(indicesIndex,color);
             mesh.UpdataUV(indicesIndex, new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0));
             mesh.UpdataVertices(indicesIndex, new Vector3(v.x, v.y), new Vector3(v.x, v.w), new Vector3(v.z, v.w), new Vector3(v.z, v.y));
             mesh.FillQuad(indicesIndex, vindex);
-        }
-
-        protected virtual void BuildMash(UIMeshBuffer mesh)
-        {
-            var r = GetPixelAdjustedRect();
-            var v = new Vector4(r.x, r.y, r.x + r.width, r.y + r.height);
-
-            vindex = mesh.AddQuad(new Vector3(v.x, v.y), new Vector3(v.x, v.w), new Vector3(v.z, v.w), new Vector3(v.z, v.y),
-                new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0),
-                color,
-                out indicesIndex
-                );
+            */
         }
 
         public Rect GetPixelAdjustedRect()
         {
-            if (!canvas || canvas.renderMode == RenderMode.WorldSpace || canvas.scaleFactor == 0.0f || !canvas.pixelPerfect)
-                return rectTransform.rect;
-            else
-                return RectTransformUtility.PixelAdjustRect(rectTransform, canvas);
+            return rectTransform.rect; 
+        }
+
+        protected override void OnDestroy()
+        {
+            if (UIGroup != null)
+            {
+                UIGroup.RemoveMeshUI(this, qmesh);
+            }
+            base.OnDestroy();
+        }
+
+        public virtual void Rebuild(CanvasUpdate update)
+        {
+            switch (update)
+            {
+                case CanvasUpdate.PreRender:
+                    if (m_VertsDirty)
+                    {
+                        UpdateGeometry();
+                        m_VertsDirty = false;
+                    }
+                    break;
+            }
         }
     }
 }
