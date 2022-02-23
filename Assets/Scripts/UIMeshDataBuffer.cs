@@ -56,13 +56,6 @@ public class SharedQuadMesh
         this.buffer = buffer;
     }
 
-    public void CollapseQuadPostion(int index)
-    {
-        if (index >= indexs.Count || index < 0) return;
-        QuadMesh quad = meshs[index];
-        buffer.CollapseQuad(quad.indicesIndex);
-    }
-
     public void FillQuad(int index)
     {
         if (index >= indexs.Count || index < 0) return;
@@ -233,11 +226,17 @@ public class UIMeshBuffer
         return startIndex;
     }
 
-    public void CollapseQuad(int indicesIndex)
+    public void CollapseQuad(int buffId,int indicesIndex)
     {
         for (int i = indicesIndex; i < indicesIndex + 6; i++)
         {
             mIndices[i] = indicesIndex;
+        }
+        for (int i = buffId; i < buffId + 4; i++)
+        {
+            mVertices[i] = Vector3.zero;
+            mColors[i] = Color.white;
+            mUv0s[i] = Vector2.zero;
         }
     }
 
@@ -250,6 +249,13 @@ public class UIMeshBuffer
         mIndices[indicesIndex + 3] = vindex + 2;
         mIndices[indicesIndex + 4] = vindex + 3;
         mIndices[indicesIndex + 5] = vindex + 0;
+    }
+
+    public void UpdateVert(int index, Vector3 position, Color32 color, Vector2 uv0)
+    {
+        mVertices[index] = position;
+        mColors[index] = color;
+        mUv0s[index] = uv0;
     }
 
     public void UpdataColor(int index,Color color)
@@ -269,12 +275,28 @@ public class UIMeshBuffer
         mVertices[index + 3] = v3;
     }
 
+    public void UpdataVertices(int index, Vector3[] v)
+    {
+        for (int i = 0; i < v.Length; i++)
+        {
+            mVertices[index + i] = v[i];
+        }
+    }
+
     public void UpdataUV(int index, Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3)
     {
         mUv0s[index] = v0;
         mUv0s[index + 1] = v1;
         mUv0s[index + 2] = v2;
         mUv0s[index + 3] = v3;
+    }
+
+    public void UpdataUV(int index, Vector2[] v)
+    {
+        for (int i = 0; i < v.Length; i++)
+        {
+            mUv0s[index + i] = v[i];
+        }
     }
 
     public void FillMesh(Mesh mesh)

@@ -52,9 +52,8 @@ namespace UnityEditor.UI
         {
             EditorGUILayout.PropertyField(m_Color);
             MeshUI ui = target as MeshUI;
-            if (ui == null) return;
+            if (ui == null || !ui.IsActive()) return;
             ui.SetAllDirty();
-            ui.Rebuild(CanvasUpdate.PreRender);
         }
     }
 }

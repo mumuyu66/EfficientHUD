@@ -13,8 +13,7 @@ using UnityEngine.UI.Collections;
 [ExecuteInEditMode]
 public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
 {
-    public SpriteAtlas Atlas;
-    private IndexedSet<MeshUI> components;
+    private IndexedSet<MeshUI> components = new IndexedSet<MeshUI>();
     public int quad_num = 400;
     public Sprite activeSprite;
 
@@ -24,8 +23,6 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
     protected override void Awake()
     {
         base.Awake();
-
-        components = new IndexedSet<MeshUI>();
         buffer = new UIMeshBuffer();
         sharedMesh = new SharedQuadMesh(quad_num, buffer);
 
@@ -51,8 +48,10 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
         renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         renderer.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
         renderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+        
     }
 
+    public bool Dirty = true;
     protected override void Start()
     {
         base.Start();
@@ -67,11 +66,20 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
 
     private void PerformUpdate()
     {
-        for (int i = 0; i < components.Count; i++)
+        if (Dirty)
         {
-            components[i].Rebuild(CanvasUpdate.PreRender);
+            MeshUI ui;
+            for (int i = 0; i < components.Count; i++)
+            {
+                ui = components[i];
+                if (ui.IsActive())
+                {
+                    ui.Rebuild(CanvasUpdate.PreRender);
+                }
+            }
+            buffer.FillMesh(mesh);
+            Dirty = false;
         }
-        buffer.FillMesh(mesh);
     }
 
     protected void ReapplyDrivenProperties(RectTransform driven)
@@ -116,14 +124,25 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
 
     public void AddMeshUI(MeshUI ui)
     {
+        if (sharedMesh == null)
+        {
+            return;
+        }
         if (components.AddUnique(ui))
         {
             ui.SetUIMeshBuffer(buffer, sharedMesh.Get());
         }
     }
 
-    public void RemoveMeshUI(MeshUI ui,QuadMesh mesh)
+    public void RemoveMeshUI(MeshUI ui,QuadMesh m)
     {
-       
+        if (m != null)
+        {
+            components.Remove(ui);
+            buffer.CollapseQuad(m.buffIndex,m.indicesIndex);
+            mesh.Clear();
+            buffer.FillMesh(mesh);
+        }
+            
     }
 }

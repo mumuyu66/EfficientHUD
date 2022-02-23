@@ -129,6 +129,10 @@ namespace UnityEngine.UI
         protected override void OnEnable()
         {
             m_VertsDirty = true;
+            if (UIGroup)
+            {
+                UIGroup.Dirty = true;
+            }
         }
 
         /// <summary>
@@ -137,16 +141,20 @@ namespace UnityEngine.UI
         protected override void OnDisable()
         {
             m_VertsDirty = true;
+            if (meshBuffer != null && qmesh != null)
+                meshBuffer.CollapseQuad(qmesh.buffIndex, qmesh.indicesIndex);
+            if (UIGroup)
+            {
+                UIGroup.Dirty = true;
+            }
         }
 
         public virtual void GraphicUpdateComplete()
         {
-            Debug.Log(string.Format("GraphicUpdateComplete"));
         }
 
         public virtual void LayoutComplete()
         {
-            Debug.Log(string.Format("LayoutComplete"));
         }
 
 
@@ -172,6 +180,10 @@ namespace UnityEngine.UI
                 return;
 
             m_VertsDirty = true;
+            if (UIGroup)
+            {
+                UIGroup.Dirty = true;
+            }
         }
 
         protected QuadMesh qmesh;
@@ -208,15 +220,6 @@ namespace UnityEngine.UI
         public Rect GetPixelAdjustedRect()
         {
             return rectTransform.rect; 
-        }
-
-        protected override void OnDestroy()
-        {
-            if (UIGroup != null)
-            {
-                UIGroup.RemoveMeshUI(this, qmesh);
-            }
-            base.OnDestroy();
         }
 
         public virtual void Rebuild(CanvasUpdate update)
