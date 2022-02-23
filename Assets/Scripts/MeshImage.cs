@@ -13,9 +13,10 @@ namespace UnityEngine.UI
         public Sprite activeSprite;
         protected override void OnPopulateMesh()
         {
+            if (meshBuffer == null || qmesh == null) return;
             var r = GetPixelAdjustedRect();
             Vector3 p = rectTransform.position;
-            var v = new Vector4(p.x, p.y, p.x + r.width, p.y + r.height);
+            var v = new Vector4(p.x - r.width / 2, p.y - r.height / 2, p.x + r.width/2, p.y + r.height/2);
             var uv = (activeSprite != null) ? Sprites.DataUtility.GetOuterUV(activeSprite) : Vector4.zero;
             meshBuffer.UpdataColor(qmesh.buffIndex, color);
             meshBuffer.UpdataUV(qmesh.buffIndex, new Vector2(uv.x, uv.y), new Vector2(uv.z, uv.w), new Vector2(uv.z, uv.w), new Vector2(uv.z, uv.y));

@@ -4,15 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.U2D;
 using UnityEngine.UI;
 using UnityEngine.UI.Collections;
 
 [DisallowMultipleComponent]
-[RequireComponent(typeof(CanvasRenderer))]
 [RequireComponent(typeof(RectTransform))]
 [ExecuteInEditMode]
 public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
 {
+    public SpriteAtlas Atlas;
     private IndexedSet<MeshUI> components;
     public int quad_num = 400;
     public Sprite activeSprite;
@@ -22,6 +23,8 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
 
     protected override void Awake()
     {
+        base.Awake();
+
         components = new IndexedSet<MeshUI>();
         buffer = new UIMeshBuffer();
         sharedMesh = new SharedQuadMesh(quad_num, buffer);
@@ -48,14 +51,18 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
         renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         renderer.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
         renderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
-
-        
-        base.Awake();
     }
 
     protected override void Start()
     {
+        base.Start();
         Canvas.willRenderCanvases += PerformUpdate;
+    }
+
+    protected override void OnDestroy()
+    {
+        Canvas.willRenderCanvases -= PerformUpdate;
+        base.OnDestroy();
     }
 
     private void PerformUpdate()
@@ -65,6 +72,11 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
             components[i].Rebuild(CanvasUpdate.PreRender);
         }
         buffer.FillMesh(mesh);
+    }
+
+    protected void ReapplyDrivenProperties(RectTransform driven)
+    {
+        Debug.Log(string.Format("ReapplyDrivenProperties name = {0}",driven.name));
     }
 
     private UIMeshBuffer buffer;

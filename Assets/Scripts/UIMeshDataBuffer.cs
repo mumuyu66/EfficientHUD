@@ -287,7 +287,8 @@ public class UIMeshBuffer
        // mesh.SetUVs(3, mUv3s);
       //  mesh.SetNormals(mNormals);
         mesh.SetTriangles(mIndices, 0);
-      //  mesh.RecalculateBounds();
+        mesh.RecalculateBounds();
     }
+
 }
 

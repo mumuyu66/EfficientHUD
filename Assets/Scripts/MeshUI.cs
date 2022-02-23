@@ -42,11 +42,15 @@ namespace UnityEngine.UI
     [ExecuteInEditMode]
     public class MeshUI : UnityEngine.EventSystems.UIBehaviour, ICanvasElement
     {
-
         protected override void Start()
         {
             base.Start();
             UIGroup.AddMeshUI(this);
+        }
+
+        protected virtual void ReapplyDrivenProperties(RectTransform t)
+        {
+            Debug.Log("ReapplyDrivenProperties");
         }
 
         protected override void OnRectTransformDimensionsChange()
@@ -117,7 +121,6 @@ namespace UnityEngine.UI
             base.OnValidate();
             SetAllDirty();
         }
-
 #endif
 
         /// <summary>
@@ -134,8 +137,6 @@ namespace UnityEngine.UI
         protected override void OnDisable()
         {
             m_VertsDirty = true;
-#if UNITY_EDITOR
-#endif
         }
 
         public virtual void GraphicUpdateComplete()
@@ -164,8 +165,6 @@ namespace UnityEngine.UI
         {
             get { return m_RectTransform ?? (m_RectTransform = GetComponent<RectTransform>()); }
         }
-
-        Transform ICanvasElement.transform => throw new NotImplementedException();
 
         public virtual void SetVerticesDirty()
         {
@@ -203,14 +202,7 @@ namespace UnityEngine.UI
         /// </summary>
         protected virtual void OnPopulateMesh()
         {
-            var r = GetPixelAdjustedRect();
-            var v = new Vector4(r.x, r.y, r.x + r.width, r.y + r.height);
-            /*
-            mesh.UpdataColor(indicesIndex,color);
-            mesh.UpdataUV(indicesIndex, new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0));
-            mesh.UpdataVertices(indicesIndex, new Vector3(v.x, v.y), new Vector3(v.x, v.w), new Vector3(v.z, v.w), new Vector3(v.z, v.y));
-            mesh.FillQuad(indicesIndex, vindex);
-            */
+           
         }
 
         public Rect GetPixelAdjustedRect()
