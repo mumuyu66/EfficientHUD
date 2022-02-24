@@ -124,6 +124,7 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
 
     public void AddMeshUI(MeshUI ui)
     {
+        Debug.Log(string.Format("add mesh ui name = {0}",ui.gameObject.name));
         if (sharedMesh == null)
         {
             return;

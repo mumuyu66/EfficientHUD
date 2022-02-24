@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine.Serialization;
 
 namespace UnityEngine.UI
 {
@@ -62,6 +63,11 @@ namespace UnityEngine.UI
             Left,
         }
 
+        [FormerlySerializedAs("m_Frame")]
+        [SerializeField] private Sprite m_Sprite;
+        public Sprite sprite { get { return m_Sprite; } set { if (SetPropertyUtility.SetClass(ref m_Sprite, value)) SetAllDirty(); } }
+
+
         /// How the Image is drawn.
         [SerializeField] private Type m_Type = Type.Simple;
         public Type type { get { return m_Type; } set { if (SetPropertyUtility.SetStruct(ref m_Type, value)) SetVerticesDirty(); } }
@@ -91,6 +97,23 @@ namespace UnityEngine.UI
 
         public Sprite activeSprite;
 
+        /// <summary>
+        /// Whether the Image has a border to work with.
+        /// </summary>
+
+        public bool hasBorder
+        {
+            get
+            {
+                if (activeSprite != null)
+                {
+                    Vector4 v = activeSprite.border;
+                    return v.sqrMagnitude > 0f;
+                }
+                return false;
+            }
+        }
+
 
         /// Image's dimensions used for drawing. X = left, Y = bottom, Z = right, W = top.
         private Vector4 GetDrawingDimensions(bool shouldPreserveAspect)
@@ -99,6 +122,9 @@ namespace UnityEngine.UI
             var size = activeSprite == null ? Vector2.zero : new Vector2(activeSprite.rect.width, activeSprite.rect.height);
 
             Rect r = GetPixelAdjustedRect();
+            Vector3 p = rectTransform.position;
+            r.x = p.x - r.width / 2;
+            r.y = p.y - r.height / 2;
             // Debug.Log(string.Format("r:{2}, size:{0}, padding:{1}", size, padding, r));
 
             int spriteW = Mathf.RoundToInt(size.x);
@@ -130,8 +156,8 @@ namespace UnityEngine.UI
             }
 
             v = new Vector4(
-                    r.x + r.width * v.x,
-                    r.y + r.height * v.y,
+                    r.x - r.width * v.x,
+                    r.y - r.height * v.y,
                     r.x + r.width * v.z,
                     r.y + r.height * v.w
                     );

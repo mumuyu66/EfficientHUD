@@ -14,10 +14,10 @@ public class SharedQuadMesh
     private UIMeshBuffer buffer;
     private QuadMesh[] meshs;
     private HashSet<int> idHashSet = new HashSet<int>();
-    private Stack<int> indexs = new Stack<int>();
+    private Queue<int> indexs = new Queue<int>();
     public QuadMesh Get()
     {
-        int index = indexs.Pop();
+        int index = indexs.Dequeue();
         idHashSet.Remove(index);
         return meshs[index];
     }
@@ -26,7 +26,7 @@ public class SharedQuadMesh
     {
         if (!idHashSet.Contains(mesh.id))
         {
-            indexs.Push(mesh.id);
+            indexs.Enqueue(mesh.id);
         }
     }
 
@@ -50,7 +50,7 @@ public class SharedQuadMesh
             int bi, ii;
             bi = buffer.AddQuad(vertices, new Color(0, 0, 0, 0.5f), uvs,out ii, true);
             meshs[i] = (new QuadMesh() {id = i, buffIndex = bi, indicesIndex = ii });
-            indexs.Push(quadNum - i - 1);
+            indexs.Enqueue(quadNum - i - 1);
             idHashSet.Add(i);
         }
         this.buffer = buffer;
@@ -230,13 +230,7 @@ public class UIMeshBuffer
     {
         for (int i = indicesIndex; i < indicesIndex + 6; i++)
         {
-            mIndices[i] = indicesIndex;
-        }
-        for (int i = buffId; i < buffId + 4; i++)
-        {
-            mVertices[i] = Vector3.zero;
-            mColors[i] = Color.white;
-            mUv0s[i] = Vector2.zero;
+            mIndices[i] = 0;
         }
     }
 
