@@ -14,25 +14,38 @@ public class SharedQuadMesh
     private UIMeshBuffer buffer;
     private QuadMesh[] meshs;
     private HashSet<int> idHashSet = new HashSet<int>();
-    private Queue<int> indexs = new Queue<int>();
+    private List<int> ids = null;
+    private int index = 0;
     public QuadMesh Get()
     {
-        int index = indexs.Dequeue();
-        idHashSet.Remove(index);
-        return meshs[index];
+        int key = ids[index];
+        if (key >= 0)
+        {
+            idHashSet.Remove(key);
+            ids[index++] = -1;
+            return meshs[key];
+        }
+        index++;
+        return Get();
     }
 
     public void Release(QuadMesh mesh)
     {
         if (!idHashSet.Contains(mesh.id))
         {
-            indexs.Enqueue(mesh.id);
+            ids[mesh.id] = mesh.id;
+            if (mesh.id < index)
+            {
+                index = mesh.id;
+            }
+            buffer.CollapseQuad(mesh.buffIndex,mesh.indicesIndex);
         }
     }
 
     public SharedQuadMesh(int quadNum, UIMeshBuffer buffer)
     {
         meshs = new QuadMesh[quadNum];
+        ids = new List<int>(quadNum);
         for (int i = 0; i < quadNum; i++)
         {
             Vector3[] vertices = new Vector3[] {
@@ -50,7 +63,7 @@ public class SharedQuadMesh
             int bi, ii;
             bi = buffer.AddQuad(vertices, new Color(0, 0, 0, 0.5f), uvs,out ii, true);
             meshs[i] = (new QuadMesh() {id = i, buffIndex = bi, indicesIndex = ii });
-            indexs.Enqueue(quadNum - i - 1);
+            ids.Add(i);
             idHashSet.Add(i);
         }
         this.buffer = buffer;
@@ -58,21 +71,17 @@ public class SharedQuadMesh
 
     public void FillQuad(int index)
     {
-        if (index >= indexs.Count || index < 0) return;
-
         buffer.FillQuad(meshs[index].indicesIndex, meshs[index].buffIndex);
     }
 
     public void UpdataColor(int index, Color color)
     {
-        if (index >= indexs.Count || index < 0) return;
         QuadMesh quad = meshs[index];
         buffer.UpdataColor(quad.buffIndex,color);
     }
 
     public void UpdataVertices(int index, Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3)
     {
-        if (index >= indexs.Count || index < 0) return;
         QuadMesh quad = meshs[index];
         Debug.Log(string.Format("UpdataVertices index = {0} v0 = {1} v1 = {2} v2 = {3} v3 = {4}",index,v0,v1,v2,v3));
         buffer.UpdataVertices(quad.buffIndex, v0,v1,v2,v3);
@@ -80,7 +89,6 @@ public class SharedQuadMesh
 
     public void UpdataUV(int index, Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3)
     {
-        if (index >= indexs.Count || index < 0) return;
         QuadMesh quad = meshs[index];
         buffer.UpdataUV(quad.buffIndex, v0, v1, v2, v3);
     }

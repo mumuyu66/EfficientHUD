@@ -45,7 +45,11 @@ namespace UnityEngine.UI
         protected override void Start()
         {
             base.Start();
-            UIGroup.AddMeshUI(this);
+            if (!InitBuffer)
+            {
+                InitBuffer = true;
+                UIGroup.AddMeshUI(this);
+            }
         }
 
         protected virtual void ReapplyDrivenProperties(RectTransform t)
@@ -91,6 +95,7 @@ namespace UnityEngine.UI
             }
         }
 
+        public int MeshIndex = 0;
 
         private MeshUIGroup m_Group;
         private void CacheGroup()
@@ -123,6 +128,7 @@ namespace UnityEngine.UI
         }
 #endif
 
+        protected bool InitBuffer = false;
         /// <summary>
         /// Mark the Graphic and the canvas as having been changed.
         /// </summary>
@@ -131,7 +137,8 @@ namespace UnityEngine.UI
             m_VertsDirty = true;
             if (UIGroup)
             {
-                UIGroup.Dirty = true;
+                InitBuffer = true;
+                UIGroup.AddMeshUI(this);
             }
         }
 
@@ -141,11 +148,10 @@ namespace UnityEngine.UI
         protected override void OnDisable()
         {
             m_VertsDirty = true;
-            if (meshBuffer != null && qmesh != null)
-                meshBuffer.CollapseQuad(qmesh.buffIndex, qmesh.indicesIndex);
             if (UIGroup)
             {
-                UIGroup.Dirty = true;
+                UIGroup.RemoveMeshUI(this, qmesh);
+                InitBuffer = false;
             }
         }
 
@@ -192,6 +198,7 @@ namespace UnityEngine.UI
         {
             this.meshBuffer = meshBuffer;
             this.qmesh = qmesh;
+            MeshIndex = qmesh.id;
             SetAllDirty();
         }
        

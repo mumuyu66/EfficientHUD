@@ -132,6 +132,7 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
         if (components.AddUnique(ui))
         {
             ui.SetUIMeshBuffer(buffer, sharedMesh.Get());
+            Dirty = true;
         }
     }
 
@@ -140,10 +141,8 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
         if (m != null)
         {
             components.Remove(ui);
-            buffer.CollapseQuad(m.buffIndex,m.indicesIndex);
-            mesh.Clear();
-            buffer.FillMesh(mesh);
+            sharedMesh.Release(m);
+            Dirty = true;
         }
-            
     }
 }
