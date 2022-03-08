@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using UnityEngine;
 
-
-public class BattleActor
+public class BattleActor:MonoBehaviour
 {
     #region 静态属性
     public string name => "Actor";
@@ -91,7 +86,8 @@ public class BattleActor
     public int MaxMp;
     public int Mp // 魔法量
     {
-        get { return 100; }
+        get;
+        set;
     }
     public int MaxSp;
     public int Shield;
@@ -104,4 +100,52 @@ public class BattleActor
     }
 
     #endregion
+
+    public void Update()
+    {
+        RandomProp();
+        RandomMove();
+    }
+
+    public Vector3 Position
+    {
+        get { return transform.position; }
+    }
+
+    public void RandomCreate()
+    {
+        MaxHp = Random.Range(100,10000);
+        Hp = MaxHp;
+        MaxMp = Random.Range(10,50);
+        Mp = MaxMp;
+        faction = Random.Range(-10,10);
+    }
+
+    private float t = 0;
+    private Vector3 v;
+    private Vector3 speed;
+    public void RandomMove()
+    {
+        if (t <= Time.realtimeSinceStartup)
+        {
+            v = new Vector3(Random.Range(-54,60), 0.5f, Random.Range(-100,0));
+            t = Time.realtimeSinceStartup + 15;
+            speed = Vector3.Normalize(v - this.transform.position)/ 2;
+        }
+        this.transform.position = this.transform.position + speed;
+        if (transform.position.x < -54 || transform.position.x > 60 || transform.position.y < -100 || transform.position.y > 0)
+        {
+            t = Time.realtimeSinceStartup + 0.01f;
+        }
+    }
+
+    public void RandomProp()
+    {
+        if (t <= Time.realtimeSinceStartup)
+        {
+            Hp -= 5 ;
+            Mp += 1;
+            Shield = Random.Range(-100, 10);
+        }
+    }
 }

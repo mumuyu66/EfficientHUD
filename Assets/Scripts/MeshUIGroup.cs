@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.U2D;
 using UnityEngine.UI;
@@ -48,13 +45,12 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
         renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         renderer.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
         renderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
-        
     }
 
-    public bool Dirty = true;
     protected override void Start()
     {
         base.Start();
+
         Canvas.willRenderCanvases += PerformUpdate;
     }
 
@@ -66,19 +62,19 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
 
     private void PerformUpdate()
     {
-        if (Dirty)
+        MeshUI ui;
+        bool dirty = false;
+        for (int i = 0; i < components.Count; i++)
         {
-            MeshUI ui;
-            for (int i = 0; i < components.Count; i++)
+            ui = components[i];
+            if (ui.Rebuild(CanvasUpdate.PreRender))
             {
-                ui = components[i];
-                if (ui.IsActive())
-                {
-                    ui.Rebuild(CanvasUpdate.PreRender);
-                }
+                dirty = true;
             }
+        }
+        if (dirty)
+        {
             buffer.FillMesh(mesh);
-            Dirty = false;
         }
     }
 
@@ -124,7 +120,6 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
 
     public void AddMeshUI(MeshUI ui)
     {
-        Debug.Log(string.Format("add mesh ui name = {0}",ui.gameObject.name));
         if (sharedMesh == null)
         {
             return;
@@ -132,17 +127,18 @@ public class MeshUIGroup : UnityEngine.EventSystems.UIBehaviour
         if (components.AddUnique(ui))
         {
             ui.SetUIMeshBuffer(buffer, sharedMesh.Get());
-            Dirty = true;
         }
     }
 
-    public void RemoveMeshUI(MeshUI ui,QuadMesh m)
+    public void RemoveMeshUI(MeshUI ui)
     {
-        if (m != null)
+        if (ui != null)
         {
             components.Remove(ui);
-            sharedMesh.Release(m);
-            Dirty = true;
+            if (ui.Quad != null)
+            {
+                sharedMesh.Release(ui.Quad);
+            }
         }
     }
 }

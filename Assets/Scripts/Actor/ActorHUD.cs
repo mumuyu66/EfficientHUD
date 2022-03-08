@@ -6,12 +6,16 @@ using UnityEngine.UI;
 
 public class ActorHUD:MonoBehaviour
 {
-    [HideInInspector] public MeshImage HPBar;
+    public Camera Camera;
+    public Camera UICamera;
+
+    public MeshImage HPBar;
     public MeshImage MPBar;
     public MeshImage HPBotBar;
     public MeshImage ShieldBar;
 
     public GameObject HPObj;
+    public GameObject MPObj;
 
     public Sprite RedSpr; 
     public Sprite RedBotSpr;
@@ -27,7 +31,7 @@ public class ActorHUD:MonoBehaviour
     private int Shield;
     private int Faction;
 
-    private bool IsRecycle;
+    private bool IsRecycle = false;
 
     public BattleActor Actor { get; private set; }
 
@@ -40,7 +44,7 @@ public class ActorHUD:MonoBehaviour
     {
         MaxHp = Actor.MaxHp;
         Hp = Actor.Hp;
-        MaxHp = Actor.MaxHp;
+        MaxMp = Actor.MaxMp;
         Mp = Actor.Mp;
         Shield = Actor.Shield;
         Faction = Actor.faction;
@@ -49,18 +53,34 @@ public class ActorHUD:MonoBehaviour
 
     public void Init()
     {
-        
+        UpdateSize();
+        UpdateFaction();
     }
 
     // 更新size
     public void UpdateSize()
-    { 
+    {
+        HPObj.GetComponent<RectTransform>().sizeDelta = new Vector2(68f, 14f);
+        HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(66f, 10f);
+        HPBotBar.GetComponent<RectTransform>().sizeDelta = new Vector2(66f, 10f);
+        ShieldBar.GetComponent<RectTransform>().sizeDelta = new Vector2(66f, 10f);
+        MPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(68f, 5f);
+        MPObj.GetComponent<RectTransform>().sizeDelta = new Vector2(68f, 6f);
     }
 
     // 更新阵营
     public void UpdateFaction()
     {
-        
+        if (Faction > 0)
+        {
+            HPBar.sprite = GreenSpr;
+            HPBotBar.sprite = GreenBotSpr;
+        }
+        else
+        {
+            HPBar.sprite = RedSpr;
+            HPBotBar.sprite = RedBotSpr;
+        }
     }
 
     // 逻辑帧
@@ -75,10 +95,22 @@ public class ActorHUD:MonoBehaviour
             UpdateMp();
         }
     }
+    private Vector2 outPos;
     //渲染帧
     public void ActorDisplayUpdate()
     {
-        
+        if (Actor != null)
+        {
+            Vector3 v = Camera.WorldToScreenPoint(Actor.Position);
+            
+            transform.localPosition = UICamera.ScreenToWorldPoint(v);
+        }
+    }
+
+    public void Update()
+    {
+        ActorLogicUpdate();
+        ActorDisplayUpdate();
     }
 
     public void UpdateHP()
@@ -95,14 +127,18 @@ public class ActorHUD:MonoBehaviour
             }
             else
             {
-                TweenHp(Actor.Hp / Actor.MaxHp);
+                TweenHp(Math.Max(0.02f, Actor.Hp / Actor.MaxHp));
             }
+            Hp = Actor.Hp;
+            MaxHp = Actor.MaxHp;
         }
     }
 
     public void UpdateMp()
     {
-        TweenMp(Actor.Mp / Actor.Mp);
+        TweenMp(Math.Max(0.02f,Actor.Mp / Actor.MaxMp));
+        Mp = Actor.Mp;
+        MaxMp = Actor.MaxMp;
     }
 
     private void TweenShield(float shield, float hp, float maxHP)

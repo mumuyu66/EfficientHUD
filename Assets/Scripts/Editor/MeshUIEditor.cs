@@ -16,6 +16,7 @@ namespace UnityEditor.UI
         protected SerializedProperty m_Script;
         protected SerializedProperty m_Color;
         protected SerializedProperty m_MeshIndex;
+        protected SerializedProperty m_SiblingIndex;
         protected AnimBool m_ShowNativeSize;
 
         protected virtual void OnDisable()
@@ -29,6 +30,7 @@ namespace UnityEditor.UI
             m_Script = serializedObject.FindProperty("m_Script");
             m_Color = serializedObject.FindProperty("m_Color");
             m_MeshIndex = serializedObject.FindProperty("MeshIndex");
+            m_SiblingIndex = serializedObject.FindProperty("SiblingIndex");
 
             m_ShowNativeSize = new AnimBool(false);
             m_ShowNativeSize.valueChanged.AddListener(Repaint);
@@ -54,6 +56,7 @@ namespace UnityEditor.UI
         {
             EditorGUILayout.PropertyField(m_Color);
             EditorGUILayout.PropertyField(m_MeshIndex);
+            EditorGUILayout.PropertyField(m_SiblingIndex);
             MeshUI ui = target as MeshUI;
             if (ui == null || !ui.IsActive()) return;
             ui.SetAllDirty();

@@ -9,7 +9,7 @@ namespace UnityEngine.UI
 {
     [RequireComponent(typeof(RectTransform))]
     [ExecuteInEditMode]
-    public class MeshImage:MeshUI
+    public class MeshImage:MeshUI, ILayoutElement
     {
         public enum Type
         {
@@ -65,7 +65,12 @@ namespace UnityEngine.UI
 
         [FormerlySerializedAs("m_Frame")]
         [SerializeField] private Sprite m_Sprite;
-        public Sprite sprite { get { return m_Sprite; } set { if (SetPropertyUtility.SetClass(ref m_Sprite, value)) SetAllDirty(); } }
+        public Sprite sprite { get { return m_Sprite; } 
+            set {
+                activeSprite = value;
+                if (SetPropertyUtility.SetClass(ref m_Sprite, value)) SetAllDirty(); 
+            } 
+        }
 
 
         /// How the Image is drawn.
@@ -113,6 +118,44 @@ namespace UnityEngine.UI
                 return false;
             }
         }
+
+        public virtual void CalculateLayoutInputHorizontal() { }
+        public virtual void CalculateLayoutInputVertical() { }
+
+        public virtual float minWidth { get { return 0; } }
+
+        public virtual float preferredWidth
+        {
+            get
+            {
+                if (activeSprite == null)
+                    return 0;
+                if (type == Type.Sliced)
+                    return Sprites.DataUtility.GetMinSize(activeSprite).x / 1;
+                return activeSprite.rect.size.x / 1;
+            }
+        }
+
+        public virtual float flexibleWidth { get { return -1; } }
+
+        public virtual float minHeight { get { return 0; } }
+
+        public virtual float preferredHeight
+        {
+            get
+            {
+                if (activeSprite == null)
+                    return 0;
+                if (type == Type.Sliced)
+                    return Sprites.DataUtility.GetMinSize(activeSprite).y / 1;
+                return activeSprite.rect.size.y / 1;
+            }
+        }
+
+        public virtual float flexibleHeight { get { return -1; } }
+
+        public virtual int layoutPriority { get { return 0; } }
+
 
 
         /// Image's dimensions used for drawing. X = left, Y = bottom, Z = right, W = top.

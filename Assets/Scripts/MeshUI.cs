@@ -40,16 +40,11 @@ namespace UnityEngine.UI
 
     [RequireComponent(typeof(RectTransform))]
     [ExecuteInEditMode]
-    public class MeshUI : UnityEngine.EventSystems.UIBehaviour, ICanvasElement
+    public class MeshUI : UnityEngine.EventSystems.UIBehaviour
     {
         protected override void Start()
         {
             base.Start();
-            if (!InitBuffer)
-            {
-                InitBuffer = true;
-                UIGroup.AddMeshUI(this);
-            }
         }
 
         protected virtual void ReapplyDrivenProperties(RectTransform t)
@@ -59,6 +54,7 @@ namespace UnityEngine.UI
 
         protected override void OnRectTransformDimensionsChange()
         {
+            Debug.Log("OnRectTransformDimensionsChange");
             if (gameObject.activeInHierarchy)
             {
                 SetVerticesDirty();
@@ -67,11 +63,13 @@ namespace UnityEngine.UI
 
         protected override void OnBeforeTransformParentChanged()
         {
+            Debug.Log("OnBeforeTransformParentChanged");
             LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
         }
 
         protected override void OnTransformParentChanged()
         {
+            Debug.Log("OnTransformParentChanged");
             base.OnTransformParentChanged();
 
             if (!IsActive())
@@ -96,6 +94,7 @@ namespace UnityEngine.UI
         }
 
         public int MeshIndex = 0;
+        public int SiblingIndex = 0;
 
         private MeshUIGroup m_Group;
         private void CacheGroup()
@@ -123,6 +122,7 @@ namespace UnityEngine.UI
 #if UNITY_EDITOR
         protected override void OnValidate()
         {
+            Debug.Log("OnValidate");
             base.OnValidate();
             SetAllDirty();
         }
@@ -135,11 +135,7 @@ namespace UnityEngine.UI
         protected override void OnEnable()
         {
             m_VertsDirty = true;
-            if (UIGroup)
-            {
-                InitBuffer = true;
-                UIGroup.AddMeshUI(this);
-            }
+            SiblingIndex = rectTransform.GetSiblingIndex();
         }
 
         /// <summary>
@@ -148,21 +144,11 @@ namespace UnityEngine.UI
         protected override void OnDisable()
         {
             m_VertsDirty = true;
-            if (UIGroup)
+            if (meshBuffer != null && qmesh != null)
             {
-                UIGroup.RemoveMeshUI(this, qmesh);
-                InitBuffer = false;
+                meshBuffer.CollapseQuad(qmesh.buffIndex, qmesh.indicesIndex);
             }
         }
-
-        public virtual void GraphicUpdateComplete()
-        {
-        }
-
-        public virtual void LayoutComplete()
-        {
-        }
-
 
         [NonSerialized] private RectTransform m_RectTransform;
 
@@ -184,14 +170,10 @@ namespace UnityEngine.UI
         {
             if (!IsActive())
                 return;
-
             m_VertsDirty = true;
-            if (UIGroup)
-            {
-                UIGroup.Dirty = true;
-            }
         }
 
+        public QuadMesh Quad { get { return qmesh; } }
         protected QuadMesh qmesh;
         protected UIMeshBuffer meshBuffer;
         public void SetUIMeshBuffer(UIMeshBuffer meshBuffer, QuadMesh qmesh)
@@ -229,19 +211,26 @@ namespace UnityEngine.UI
             return rectTransform.rect; 
         }
 
-        public virtual void Rebuild(CanvasUpdate update)
+        public virtual bool Rebuild(CanvasUpdate update)
         {
+            if (!IsActive())
+            {
+                return m_VertsDirty;
+            }
+            bool dirty = false;
             switch (update)
             {
                 case CanvasUpdate.PreRender:
                     if (m_VertsDirty)
                     {
+                        dirty = true;
                         UpdateGeometry();
                         m_VertsDirty = false;
                     }
                     break;
             }
-        }
+            return dirty;
+        }        
     }
 }
 
