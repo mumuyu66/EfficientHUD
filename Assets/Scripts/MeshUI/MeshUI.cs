@@ -54,7 +54,6 @@ namespace UnityEngine.UI
 
         protected override void OnRectTransformDimensionsChange()
         {
-            Debug.Log("OnRectTransformDimensionsChange");
             if (gameObject.activeInHierarchy)
             {
                 SetVerticesDirty();
@@ -63,13 +62,15 @@ namespace UnityEngine.UI
 
         protected override void OnBeforeTransformParentChanged()
         {
-            Debug.Log("OnBeforeTransformParentChanged");
             LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
+            if (gameObject.activeInHierarchy)
+            {
+                SetVerticesDirty();
+            }
         }
 
         protected override void OnTransformParentChanged()
         {
-            Debug.Log("OnTransformParentChanged");
             base.OnTransformParentChanged();
 
             if (!IsActive())
@@ -122,7 +123,6 @@ namespace UnityEngine.UI
 #if UNITY_EDITOR
         protected override void OnValidate()
         {
-            Debug.Log("OnValidate");
             base.OnValidate();
             SetAllDirty();
         }

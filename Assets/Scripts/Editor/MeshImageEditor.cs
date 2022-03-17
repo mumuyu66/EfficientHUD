@@ -24,8 +24,6 @@ namespace UnityEditor.UI
         SerializedProperty m_PreserveAspect;
         GUIContent m_SpriteTypeContent;
         GUIContent m_ClockwiseContent;
-        AnimBool m_ShowSlicedOrTiled;
-        AnimBool m_ShowSliced;
         AnimBool m_ShowFilled;
         AnimBool m_ShowType;
 
@@ -51,11 +49,7 @@ namespace UnityEditor.UI
 
             var typeEnum = (MeshImage.Type)m_Type.enumValueIndex;
 
-            m_ShowSlicedOrTiled = new AnimBool(!m_Type.hasMultipleDifferentValues && typeEnum == MeshImage.Type.Sliced);
-            m_ShowSliced = new AnimBool(!m_Type.hasMultipleDifferentValues && typeEnum == MeshImage.Type.Sliced);
             m_ShowFilled = new AnimBool(!m_Type.hasMultipleDifferentValues && typeEnum == MeshImage.Type.Filled);
-            m_ShowSlicedOrTiled.valueChanged.AddListener(Repaint);
-            m_ShowSliced.valueChanged.AddListener(Repaint);
             m_ShowFilled.valueChanged.AddListener(Repaint);
 
             SetShowNativeSize(true);
@@ -64,8 +58,6 @@ namespace UnityEditor.UI
         protected override void OnDisable()
         {
             m_ShowType.valueChanged.RemoveListener(Repaint);
-            m_ShowSlicedOrTiled.valueChanged.RemoveListener(Repaint);
-            m_ShowSliced.valueChanged.RemoveListener(Repaint);
             m_ShowFilled.valueChanged.RemoveListener(Repaint);
         }
 
@@ -94,8 +86,8 @@ namespace UnityEditor.UI
 
         void SetShowNativeSize(bool instant)
         {
-            Image.Type type = (Image.Type)m_Type.enumValueIndex;
-            bool showNativeSize = (type == Image.Type.Simple || type == Image.Type.Filled) && m_Sprite.objectReferenceValue != null;
+            MeshImage.Type type = (MeshImage.Type)m_Type.enumValueIndex;
+            bool showNativeSize = (type == MeshImage.Type.Simple || type == MeshImage.Type.Filled) && m_Sprite.objectReferenceValue != null;
             base.SetShowNativeSize(showNativeSize, instant);
         }
 
@@ -109,19 +101,7 @@ namespace UnityEditor.UI
             EditorGUILayout.PropertyField(m_Sprite, m_SpriteContent);
             if (EditorGUI.EndChangeCheck())
             {
-                var newSprite = m_Sprite.objectReferenceValue as Sprite;
-                if (newSprite)
-                {
-                    MeshImage.Type oldType = (MeshImage.Type)m_Type.enumValueIndex;
-                    if (newSprite.border.SqrMagnitude() > 0)
-                    {
-                        m_Type.enumValueIndex = (int)Image.Type.Sliced;
-                    }
-                    else if (oldType == MeshImage.Type.Sliced)
-                    {
-                        m_Type.enumValueIndex = (int)Image.Type.Simple;
-                    }
-                }
+             
             }
         }
 
@@ -136,32 +116,7 @@ namespace UnityEditor.UI
             ++EditorGUI.indentLevel;
             {
                 MeshImage.Type typeEnum = (MeshImage.Type)m_Type.enumValueIndex;
-                bool showSlicedOrTiled = (!m_Type.hasMultipleDifferentValues && (typeEnum == MeshImage.Type.Sliced));
-                if (showSlicedOrTiled && targets.Length > 1)
-                    showSlicedOrTiled = targets.Select(obj => obj as MeshImage).All(img => img.hasBorder);
-
-                m_ShowSlicedOrTiled.target = showSlicedOrTiled;
-                m_ShowSliced.target = (showSlicedOrTiled && !m_Type.hasMultipleDifferentValues && typeEnum == MeshImage.Type.Sliced);
                 m_ShowFilled.target = (!m_Type.hasMultipleDifferentValues && typeEnum == MeshImage.Type.Filled);
-
-
-
-                MeshImage image = target as MeshImage;
-                if (EditorGUILayout.BeginFadeGroup(m_ShowSlicedOrTiled.faded))
-                {
-                  //  if (image.hasBorder)
-                     //   EditorGUILayout.PropertyField(m_FillCenter);
-                }
-                EditorGUILayout.EndFadeGroup();
-
-                if (EditorGUILayout.BeginFadeGroup(m_ShowSliced.faded))
-                {
-                    //if (image.sprite != null && !image.hasBorder)
-                    if (image.sprite != null)
-                        EditorGUILayout.HelpBox("This Image doesn't have a border.", MessageType.Warning);
-                }
-                EditorGUILayout.EndFadeGroup();
-
 
                 if (EditorGUILayout.BeginFadeGroup(m_ShowFilled.faded))
                 {

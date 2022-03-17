@@ -109,7 +109,7 @@ public class ActorHUD:MonoBehaviour
 
     public void Update()
     {
-        ActorLogicUpdate();
+        //ActorLogicUpdate();
         ActorDisplayUpdate();
     }
 

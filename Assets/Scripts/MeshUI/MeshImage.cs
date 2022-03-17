@@ -14,7 +14,6 @@ namespace UnityEngine.UI
         public enum Type
         {
             Simple,
-            Sliced,
             Filled
         }
 
@@ -130,8 +129,6 @@ namespace UnityEngine.UI
             {
                 if (activeSprite == null)
                     return 0;
-                if (type == Type.Sliced)
-                    return Sprites.DataUtility.GetMinSize(activeSprite).x / 1;
                 return activeSprite.rect.size.x / 1;
             }
         }
@@ -146,8 +143,6 @@ namespace UnityEngine.UI
             {
                 if (activeSprite == null)
                     return 0;
-                if (type == Type.Sliced)
-                    return Sprites.DataUtility.GetMinSize(activeSprite).y / 1;
                 return activeSprite.rect.size.y / 1;
             }
         }
@@ -342,7 +337,11 @@ namespace UnityEngine.UI
         void GenerateFilledSprite(bool preserveAspect)
         {
             if (m_FillAmount < 0.001f)
+            {
+                meshBuffer.CollapseQuad(qmesh.buffIndex,qmesh.indicesIndex);
                 return;
+            }
+                
 
             Vector4 v = GetDrawingDimensions(preserveAspect);
             Vector4 outer = activeSprite != null ? Sprites.DataUtility.GetOuterUV(activeSprite) : Vector4.zero;
@@ -549,78 +548,7 @@ namespace UnityEngine.UI
             meshBuffer.FillQuad(qmesh.indicesIndex, qmesh.buffIndex);
         }
 
-        static readonly Vector2[] s_VertScratch = new Vector2[4];
-        static readonly Vector2[] s_UVScratch = new Vector2[4];
-
-        private void GenerateSlicedSprite()
-        {
-            /*
-            Vector4 outer, inner, padding, border;
-
-            if (activeSprite != null)
-            {
-                outer = Sprites.DataUtility.GetOuterUV(activeSprite);
-                inner = Sprites.DataUtility.GetInnerUV(activeSprite);
-                padding = Sprites.DataUtility.GetPadding(activeSprite);
-                border = activeSprite.border;
-            }
-            else
-            {
-                outer = Vector4.zero;
-                inner = Vector4.zero;
-                padding = Vector4.zero;
-                border = Vector4.zero;
-            }
-
-            Rect rect = GetPixelAdjustedRect();
-            Vector4 adjustedBorders = GetAdjustedBorders(border / pixelsPerUnit, rect);
-            padding = padding / pixelsPerUnit;
-
-            s_VertScratch[0] = new Vector2(padding.x, padding.y);
-            s_VertScratch[3] = new Vector2(rect.width - padding.z, rect.height - padding.w);
-
-            s_VertScratch[1].x = adjustedBorders.x;
-            s_VertScratch[1].y = adjustedBorders.y;
-
-            s_VertScratch[2].x = rect.width - adjustedBorders.z;
-            s_VertScratch[2].y = rect.height - adjustedBorders.w;
-
-            for (int i = 0; i < 4; ++i)
-            {
-                s_VertScratch[i].x += rect.x;
-                s_VertScratch[i].y += rect.y;
-            }
-
-            s_UVScratch[0] = new Vector2(outer.x, outer.y);
-            s_UVScratch[1] = new Vector2(inner.x, inner.y);
-            s_UVScratch[2] = new Vector2(inner.z, inner.w);
-            s_UVScratch[3] = new Vector2(outer.z, outer.w);
-
-            toFill.Clear();
-
-            for (int x = 0; x < 3; ++x)
-            {
-                int x2 = x + 1;
-
-                for (int y = 0; y < 3; ++y)
-                {
-                    if (!m_FillCenter && x == 1 && y == 1)
-                        continue;
-
-                    int y2 = y + 1;
-
-
-                    AddQuad(toFill,
-                        new Vector2(s_VertScratch[x].x, s_VertScratch[y].y),
-                        new Vector2(s_VertScratch[x2].x, s_VertScratch[y2].y),
-                        color,
-                        new Vector2(s_UVScratch[x].x, s_UVScratch[y].y),
-                        new Vector2(s_UVScratch[x2].x, s_UVScratch[y2].y));
-                }
-            }
-            */
-        }
-
+        
 
         /// <summary>
         /// Update the UI renderer mesh.
@@ -636,9 +564,6 @@ namespace UnityEngine.UI
             {
                 case Type.Simple:
                     GenerateSimpleSprite();
-                    break;
-                case Type.Sliced:
-                    GenerateSlicedSprite();
                     break;
                 case Type.Filled:
                     GenerateFilledSprite(m_PreserveAspect);

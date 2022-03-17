@@ -267,7 +267,7 @@ public class UIMeshBuffer
 
     public void UpdataVertices(int index, Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3)
     {
-        Debug.Log(string.Format("UpdataVertices index = {0} v0 = {1} v1 = {2} v2 = {3} v3 = {4}",index,v0,v1,v2,v3));
+     //   Debug.Log(string.Format("UpdataVertices index = {0} v0 = {1} v1 = {2} v2 = {3} v3 = {4}",index,v0,v1,v2,v3));
         mVertices[index] = v0;
         mVertices[index + 1] = v1;
         mVertices[index + 2] = v2;
@@ -308,7 +308,6 @@ public class UIMeshBuffer
        // mesh.SetUVs(3, mUv3s);
       //  mesh.SetNormals(mNormals);
         mesh.SetTriangles(mIndices, 0);
-        mesh.RecalculateBounds();
     }
 
 }
